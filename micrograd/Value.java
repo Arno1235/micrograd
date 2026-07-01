@@ -29,7 +29,7 @@ public class Value {
     private void constructor(Double data, Set<Value> _children) {
         this.data = data;
         this.grad = 0.0d;
-        this._backward = null;
+        this._backward = (Value value) -> {};
         this._prev = _children;
     }
 
@@ -73,8 +73,16 @@ public class Value {
             Value value_0 = temp_children.get(0);
             Value value_1 = temp_children.get(1);
 
+            System.out.println("---");
+            System.out.println(value_1.grad.toString() + " += " + value_0.data.toString() + " * " + value.grad.toString());
+            System.out.println(value_0.grad.toString() + " += " + value_1.data.toString() + " * " + value.grad.toString());
+
             value_0.grad += value_1.data * value.grad;
             value_1.grad += value_0.data * value.grad;
+
+            System.out.println(value_1.grad.toString());
+            System.out.println(value_0.grad.toString());
+            System.out.println("---");
         };
 
         return out;
@@ -139,7 +147,9 @@ public class Value {
         this.grad = 1.0d;
 
         Collections.reverse(topo);
-        for (Value v : this.topo) v._backward.accept(v);
+        for (Value v : this.topo) {
+            v._backward.accept(v);
+        }
     }
 
 }
