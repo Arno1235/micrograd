@@ -1,6 +1,10 @@
 // to run:
 // javac demo.java && java demo
 
+import micrograd.Module;
+import micrograd.MLP;
+import micrograd.Layer;
+import micrograd.Neuron;
 import micrograd.Value;
 
 import java.util.ArrayList;
