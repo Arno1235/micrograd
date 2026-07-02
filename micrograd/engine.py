@@ -2,7 +2,8 @@
 class Value:
     """ stores a single scalar value and its gradient """
 
-    def __init__(self, data, _children=(), _op=''):
+    def __init__(self, data, _children=(), _op='', id=''):
+        self.id = id
         self.data = data
         self.grad = 0
         # internal variables used for autograd graph construction
@@ -11,48 +12,48 @@ class Value:
         self._op = _op # the op that produced this node, for graphviz / debugging / etc
 
     def __add__(self, other):
-        other = other if isinstance(other, Value) else Value(other)
-        out = Value(self.data + other.data, (self, other), '+')
+        other = other if isinstance(other, Value) else Value(other, id=str(other))
+        out = Value(self.data + other.data, (self, other), '+', id=f'{self.id} + {other.id}')
 
         def _backward():
             self.grad += out.grad
+            print(f"backward add from {out.id}: {self.id} .grad -> {self.grad}")
             other.grad += out.grad
+            print(f"backward add from {out.id}: {other.id} .grad -> {other.grad}")
         out._backward = _backward
 
         return out
 
     def __mul__(self, other):
-        other = other if isinstance(other, Value) else Value(other)
-        out = Value(self.data * other.data, (self, other), '*')
+        other = other if isinstance(other, Value) else Value(other, id=str(other))
+        out = Value(self.data * other.data, (self, other), '*', id=f'{self.id} * {other.id}')
 
         def _backward():
-            print("---")
-            print(f"{self.grad} += {other.data} * {out.grad}")
-            print(f"{other.grad} += {self.data} * {out.grad}")
             self.grad += other.data * out.grad
+            print(f"backward mul from {out.id}: {self.id} .grad -> {self.grad}")
             other.grad += self.data * out.grad
-            print(self.grad)
-            print(other.grad)
-            print("---")
+            print(f"backward mul from {out.id}: {other.id} .grad -> {other.grad}")
         out._backward = _backward
 
         return out
 
     def __pow__(self, other):
         assert isinstance(other, (int, float)), "only supporting int/float powers for now"
-        out = Value(self.data**other, (self,), f'**{other}')
+        out = Value(self.data**other, (self,), f'**{other}', id=f'{self.id} ** {other}')
 
         def _backward():
             self.grad += (other * self.data**(other-1)) * out.grad
+            print(f"backward pow from {out.id}: {self.id} .grad -> {self.grad}")
         out._backward = _backward
 
         return out
 
     def relu(self):
-        out = Value(0 if self.data < 0 else self.data, (self,), 'ReLU')
+        out = Value(0 if self.data < 0 else self.data, (self,), 'ReLU', id=f'relu {self.id}')
 
         def _backward():
             self.grad += (out.data > 0) * out.grad
+            print(f"backward relu from {out.id}: {self.id} .grad -> {self.grad}")
         out._backward = _backward
 
         return out
@@ -73,6 +74,7 @@ class Value:
         # go one variable at a time and apply the chain rule to get its gradient
         self.grad = 1
         for v in reversed(topo):
+            print(v.id)
             v._backward()
 
     def __neg__(self): # -self

@@ -10,6 +10,8 @@ import java.util.function.Consumer;
 public class Value {
     // stores a single scalar value and its gradient
 
+    public String id;
+
     public Double data;
     public Double grad;
     public Set<Value> _prev;
@@ -18,23 +20,24 @@ public class Value {
     private List<Value> topo;
     private Set<Value> visited;
 
-    public Value(Double data) {
-        this.constructor(data, new HashSet<>());
+    public Value(Double data, String id) {
+        this.constructor(data, new HashSet<>(), id);
     }
 
-    public Value(Double data, Set<Value> _children) {
-        this.constructor(data, _children);
+    public Value(Double data, Set<Value> _children, String id) {
+        this.constructor(data, _children, id);
     }
 
-    private void constructor(Double data, Set<Value> _children) {
+    private void constructor(Double data, Set<Value> _children, String id) {
+        this.id = id;
         this.data = data;
         this.grad = 0.0d;
         this._backward = (Value value) -> {};
         this._prev = _children;
     }
 
-    public Value add(Double data) {
-        return this.add(new Value(data));
+    public Value add(Double data, String id) {
+        return this.add(new Value(data, id));
     }
 
     public Value add(Value other) {
@@ -43,19 +46,20 @@ public class Value {
         new_children.add(this);
         new_children.add(other);
 
-        Value out = new Value(this.data + other.data, new_children);
+        Value out = new Value(this.data + other.data, new_children, this.id + " + " + other.id);
 
         out._backward = (Value value) -> {
             for (Value v : value._prev) {
                 v.grad += value.grad;
+                System.out.println("backward add from " + value.id + ": " + v.id + " .grad -> " + v.grad.toString());
             }
         };
 
         return out;
     }
 
-    public Value mul(Double data) {
-        return this.mul(new Value(data));
+    public Value mul(Double data, String id) {
+        return this.mul(new Value(data, id));
     }
 
     public Value mul(Value other) {
@@ -64,7 +68,7 @@ public class Value {
         new_children.add(this);
         new_children.add(other);
 
-        Value out = new Value(this.data * other.data, new_children);
+        Value out = new Value(this.data * other.data, new_children, this.id + " * " + other.id);
 
         out._backward = (Value value) -> {
             List<Value> temp_children = new ArrayList<Value>();
@@ -73,16 +77,12 @@ public class Value {
             Value value_0 = temp_children.get(0);
             Value value_1 = temp_children.get(1);
 
-            System.out.println("---");
-            System.out.println(value_1.grad.toString() + " += " + value_0.data.toString() + " * " + value.grad.toString());
-            System.out.println(value_0.grad.toString() + " += " + value_1.data.toString() + " * " + value.grad.toString());
-
             value_0.grad += value_1.data * value.grad;
             value_1.grad += value_0.data * value.grad;
 
-            System.out.println(value_1.grad.toString());
-            System.out.println(value_0.grad.toString());
-            System.out.println("---");
+            System.out.println("backward mul from " + value.id + ": " + value_0.id + " .grad -> " + value_0.grad.toString());
+            System.out.println("backward mul from " + value.id + ": " + value_1.id + " .grad -> " + value_1.grad.toString());
+
         };
 
         return out;
@@ -92,16 +92,17 @@ public class Value {
         return this.pow((double) other);
     }
 
-    public Value pow(double other) {
+    public Value pow(Double other) {
 
         Set<Value> new_children = new HashSet<>();
         new_children.add(this);
 
-        Value out = new Value(Math.pow(this.data, other), new_children);
+        Value out = new Value(Math.pow(this.data, other), new_children, this.id + " ** " + other.toString());
 
         out._backward = (Value value) -> {
             for (Value v : value._prev) {
                 v.grad += (other * Math.pow(v.data,(other-1))) * value.grad;
+                System.out.println("backward pow from " + value.id + ": " + v.id + " .grad -> " + v.grad.toString());
             }
         };
 
@@ -116,11 +117,12 @@ public class Value {
         Double new_data = 0.0d;
         if (this.data > 0) new_data = this.data;
 
-        Value out = new Value(new_data, new_children);
+        Value out = new Value(new_data, new_children, "relu " + this.id);
 
         out._backward = (Value value) -> {
             for (Value v : value._prev) {
                 if (value.data > 0) v.grad += value.grad;
+                System.out.println("backward relu from " + value.id + ": " + v.id + " .grad -> " + v.grad.toString());
             }
         };
 
@@ -148,6 +150,7 @@ public class Value {
 
         Collections.reverse(topo);
         for (Value v : this.topo) {
+            System.out.println(v.id);
             v._backward.accept(v);
         }
     }
