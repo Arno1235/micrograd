@@ -21,9 +21,9 @@ public class MLP extends Module {
         }
     }
 
-    public List<Value> call(List<Value> x) {
+    public Value call(List<Value> x) {
         for (Layer layer : this.layers) x = layer.call(x);
-        return x;
+        return x.get(0);
     }
 
     public List<Value> parameters() {
