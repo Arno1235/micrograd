@@ -12,21 +12,21 @@ public class Value {
 
     public Double data;
     public Double grad;
-    public Set<Value> _prev;
+    public List<Value> _prev;
     public Consumer<Value> _backward;
 
     private List<Value> topo;
     private Set<Value> visited;
 
     public Value(Double data) {
-        this.constructor(data, new HashSet<>());
+        this.constructor(data, new ArrayList<>());
     }
 
-    public Value(Double data, Set<Value> _children) {
+    public Value(Double data, List<Value> _children) {
         this.constructor(data, _children);
     }
 
-    private void constructor(Double data, Set<Value> _children) {
+    private void constructor(Double data, List<Value> _children) {
         this.data = data;
         this.grad = 0.0d;
         this._backward = (Value value) -> {};
@@ -39,7 +39,7 @@ public class Value {
 
     public Value add(Value other) {
 
-        Set<Value> new_children = new HashSet<>();
+        List<Value> new_children = new ArrayList<>();
         new_children.add(this);
         new_children.add(other);
 
@@ -60,7 +60,7 @@ public class Value {
 
     public Value mul(Value other) {
 
-        Set<Value> new_children = new HashSet<>();
+        List<Value> new_children = new ArrayList<>();
         new_children.add(this);
         new_children.add(other);
 
@@ -86,7 +86,7 @@ public class Value {
 
     public Value pow(Double other) {
 
-        Set<Value> new_children = new HashSet<>();
+        List<Value> new_children = new ArrayList<>();
         new_children.add(this);
 
         Value out = new Value(Math.pow(this.data, other), new_children);
@@ -102,7 +102,7 @@ public class Value {
 
     public Value relu() {
 
-        Set<Value> new_children = new HashSet<>();
+        List<Value> new_children = new ArrayList<>();
         new_children.add(this);
 
         Double new_data = 0.0d;
