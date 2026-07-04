@@ -42,7 +42,7 @@ public class demo {
 
         System.out.println("\n--- TEST 2 ---");
 
-        long startTime = System.nanoTime();
+        long start_time = System.nanoTime();
 
         // initialize a model 
         MLP model = new MLP(2, Arrays.asList(16, 16, 1));  // 2-layer neural network
@@ -76,8 +76,8 @@ public class demo {
 
         }
 
-        long endTime = System.nanoTime();
-        double duration = (double) (endTime - startTime) / 1000000000;  // divide by 1000000000 to get seconds.
+        long end_time = System.nanoTime();
+        double duration = (double) (end_time - start_time) / 1000000000;  // divide by 1000000000 to get seconds.
 
         System.out.println("100 epochs took " + duration + "s -> " + duration/100 + "s/epoch");
 
