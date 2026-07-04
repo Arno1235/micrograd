@@ -12,7 +12,7 @@ No AI! Only Stackoverflow:
 
 run:
 ```
-
+g++ demo.cpp -o demo.out && ./demo.out
 ```
 
 output:
