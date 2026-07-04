@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class demo {
 
@@ -43,6 +42,8 @@ public class demo {
 
         System.out.println("\n--- TEST 2 ---");
 
+        long startTime = System.nanoTime();
+
         // initialize a model 
         MLP model = new MLP(2, Arrays.asList(16, 16, 1));  // 2-layer neural network
         System.out.println("number of parameters " + Integer.toString(model.parameters().size()));  // expect 337 parameters
@@ -51,9 +52,7 @@ public class demo {
 
         Value total_loss = (Value) result.get(0);
         Double acc = (Double) result.get(1);
-
-        System.out.println(total_loss.data);
-        System.out.println(acc.toString());
+        System.out.println("loss " + total_loss.data.toString() + ", accuracy " + acc*100 + "%");
 
         for (int k = 0; k < 100; k++) {
             
@@ -76,6 +75,11 @@ public class demo {
             System.out.println("step " + k + " loss " + total_loss.data.toString() + ", accuracy " + acc*100 + "%");
 
         }
+
+        long endTime = System.nanoTime();
+        double duration = (double) (endTime - startTime) / 1000000000;  // divide by 1000000000 to get seconds.
+
+        System.out.println("100 epochs took " + duration + "s -> " + duration/100 + "s/epoch");
 
     }
 
@@ -188,7 +192,7 @@ public class demo {
 
     private static List<Double> get_y() {
         return Arrays.asList(0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0).stream()
-            .map(v -> (double) v)
+            .map(v -> (double) v*2-1)
             .collect(Collectors.toList());
     }
 
@@ -230,7 +234,12 @@ public class demo {
 
         // svm "max-margin" loss
         List<Value> losses = new ArrayList<>();
-        for (int i = 0; i < yb.size(); i++) losses.add( scores.get(i).mul(yb.get(i)).neg().add(1.0d).relu() );
+        for (int i = 0; i < yb.size(); i++) {
+            losses.add(
+                scores.get(i).mul(yb.get(i)).neg().add(1.0d).relu()
+            );
+        }
+
         Value data_loss = losses.stream()
             .reduce(new Value(0.0d), Value::add)
             .mul(1.0d / losses.size());
@@ -246,7 +255,11 @@ public class demo {
 
         // also get accuracy
         List<Integer> accuracy = new ArrayList<>();
-        for (int i = 0; i < yb.size(); i++) accuracy.add((yb.get(i) > 0) == (scores.get(i).data > 0) ? 1 : 0);
+        for (int i = 0; i < yb.size(); i++) {
+            accuracy.add(
+                (yb.get(i) > 0) == (scores.get(i).data > 0) ? 1 : 0
+            );
+        }
 
         Double acc = ((double) accuracy.stream().mapToInt(Integer::intValue).sum()) / accuracy.size();
 
