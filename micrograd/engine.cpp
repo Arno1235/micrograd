@@ -21,12 +21,20 @@ class Value {
 
         Value add(double other);
         Value add(Value *other);
+        Value add(Value other);
         Value mul(double other);
         Value mul(Value *other);
         Value pow(double other);
         Value relu();
         void _build_topo(Value* value);
         void backward();
+        Value neg();
+        Value sub(double other);
+        Value sub(Value *other);
+        Value div(double other);
+        Value div(Value *other);
+        Value rdiv(Value *other);
+        Value rdiv(double other);
 };
 
 Value::Value(double test) {
@@ -56,9 +64,14 @@ Value Value::add(Value* other) {
     return out;
 }
 
+Value Value::add(Value other) {
+    Value* other_ptr = &other;
+    return this->add(other_ptr);
+}
+
 Value Value::add(double other) {
     Value temp = Value(other);
-    return add(&temp);
+    return this->add(&temp);
 }
 
 Value Value::mul(Value* other) {
@@ -74,7 +87,7 @@ Value Value::mul(Value* other) {
 
 Value Value::mul(double other) {
     Value temp = Value(other);
-    return mul(&temp);
+    return this->mul(&temp);
 }
 
 Value Value::pow(double other) {
@@ -123,4 +136,38 @@ void Value::backward() {
         v->_backward(v);
     }
 
+}
+
+Value Value::neg() {  // -this
+    return this->mul(-1);
+}
+
+Value Value::sub(double other) {  // this - other
+    Value temp = Value(other).neg();
+    return this->add(&temp);
+}
+
+Value Value::sub(Value* other) {  // this - other
+    Value temp = other->neg();
+    return this->add(&temp);
+}
+
+Value Value::div(double other) {  // this / other
+    Value temp = Value(other).pow(-1);
+    return this->mul(&temp);
+}
+
+Value Value::div(Value* other) {  // this / other
+    Value temp = other->pow(-1);
+    return this->mul(&temp);
+}
+
+Value Value::rdiv(Value* other) {  // other / this
+    Value temp = this->pow(-1);
+    return other->mul(&temp);
+}
+
+Value Value::rdiv(double other) {  // other / this
+    Value temp = this->pow(-1);
+    return temp.mul(other);
 }

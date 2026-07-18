@@ -6,21 +6,30 @@ int main() {
     
     std::cout << "\n--- Test 1 ---" << std::endl;
 
-    Value v1 = Value(1);
-    Value v2 = Value(2);
-    Value v3 = v1.add(&v2);
-    std::cout << v1.data << std::endl;
-    std::cout << v2.data << std::endl;
-    std::cout << v3.data << std::endl;
+    Value a = Value(-4);
+    Value b = Value(2);
+    Value c = a.add(&b);
+    Value d = a.mul(&b).add(b.pow(3));
 
-    v3.backward();
+    c = c.add(c.add(1));
+    c = c.add(c.add(1).sub(&a));
 
-    std::cout << v1.data << std::endl;
-    std::cout << v2.data << std::endl;
-    std::cout << v3.data << std::endl;
+    d = d.add(d.mul(2).add(b.add(&a).relu()));
+    d = d.add(d.mul(3).add(b.sub(&a).relu()));
+
+    Value e = c.sub(&d);
+    Value f = e.pow(2);
+    Value g = f.div(2);
+    g = g.add(f.rdiv(10));
+
+    std::cout << g.data << std::endl;
+
+    g.backward();
+
+    std::cout << a.grad << std::endl;
+    std::cout << b.grad << std::endl;
 
     std::cout << "\n--- Test 2 ---" << std::endl;
-    
     
     return 0;
 }
