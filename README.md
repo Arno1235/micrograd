@@ -12,7 +12,7 @@ No AI! Only Stackoverflow:
 
 run:
 ```
-g++ demo.cpp -o demo.out && ./demo.out
+g++ demo.cpp -o demo.out -std=c++11 -stdlib=libc++ && ./demo.out
 ```
 
 output:

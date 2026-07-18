@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 #include "micrograd/engine.cpp"
 
 int main() {
@@ -7,7 +8,13 @@ int main() {
 
     Value v1 = Value(1);
     Value v2 = Value(2);
-    Value v3 = v1.add(v2);
+    Value v3 = v1.add(&v2);
+    std::cout << v1.data << std::endl;
+    std::cout << v2.data << std::endl;
+    std::cout << v3.data << std::endl;
+
+    v3.backward();
+
     std::cout << v1.data << std::endl;
     std::cout << v2.data << std::endl;
     std::cout << v3.data << std::endl;
