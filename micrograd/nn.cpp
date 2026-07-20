@@ -103,6 +103,7 @@ class MLP : Module {
 
         MLP(int nin, std::vector<int> nouts);
 
+        void zero_grad();
         std::vector<Value*> parameters();
         Value* call(std::vector<Value*> x);
 };
@@ -132,5 +133,11 @@ std::vector<Value*> MLP::parameters() {
         p.insert(p.end(), lp.begin(), lp.end());
     }
     return p;
+}
+
+void MLP::zero_grad() {
+    for (Value* p : this->parameters()) {
+        p->grad = 0;
+    }
 }
 
